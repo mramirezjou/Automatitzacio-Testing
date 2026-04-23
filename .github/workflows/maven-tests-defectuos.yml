@@ -1,57 +1,28 @@
-name: Java CI defectuós
+name: Java CI with Maven
 
 on:
   push:
     branches: [ "main" ]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Descarrega el codi
-        uses: actions/checkout@v4
-
-      - name: Configura JDK 11
-        uses: actions/setup-javaname: Java CI
-
-on:
-  push:
-    branches: [ "main", "develop" ]
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Descarrega el codi
+      # 1. Pull the code from the repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Configura JDK 17
-        # We give this step an ID so we can reference its outputs
-        id: setup-jdk
+      # 2. Set up Java 17 with caching for speed
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
+          distribution: 'temurin' # "temurin" is the recommended OpenJDK distribution
+          cache: 'maven'          # Automatically caches your ~/.m2 dependencies
 
-      - name: Debug Java Version
-        # This confirms exactly what the runner is seeing
-        run: |
-          echo "JAVA_HOME is: $JAVA_HOME"
-          java -version
-          mvn -version
-
-      - name: Compila i executa proves
-        # We explicitly point Maven to the JAVA_HOME we just set up
-        run: mvn -B test -D"java.home=${{ steps.setup-jdk.outputs.path }}"@v4
-        with:
-          distribution: temurin
-          java-version: '11'
-          cache: maven
-
-      - name: Compila i executa proves
-        run: mvn -B test
+      # 3. Build and Test
+      - name: Build with Maven
+        run: mvn -B test --file pom.xml
